@@ -1,0 +1,1465 @@
+# Birendra Dahal
+
+# NP000573
+
+
+
+IMPORT sys
+
+IMPORT re
+
+IMPORT datetime
+
+IMPORT calendar
+
+IMPORT sys
+
+from uuid IMPORT uuid4
+
+IMPORT tabulate
+
+
+
+
+
+# ****************************************************
+
+
+
+DEFINE FUNCTION reading_file_data(filename, mode):  # take filename and mode as paramenter
+
+    with open(filename, mode) as fo:
+
+        SET file_content TO fo.read()
+
+        SET file_content TO file_content.split('\n')  # splitting file data by '\n'
+
+        SET data_list TO []
+
+
+
+        FOR data IN file_content:
+
+            SET data TO data.split(',')  # splitting data again by ','
+
+            data_list.append(data)
+
+        data_list.pop(-1)  # removing empty list
+
+    RETURN data_list
+
+
+
+
+
+# **************** Admin functions*************
+
+# Admin Login
+
+DEFINE FUNCTION admin_login():
+
+    WHILE True:
+
+        SET admin_name TO INPUT("Username: ")
+
+        SET admin_psd TO INPUT("Password: ")
+
+        SET admin_list TO reading_file_data('admins.txt', 'r')
+
+        OUTPUT(admin_list)
+
+        SET flag TO 0
+
+        FOR c_data IN admin_list:
+
+
+
+            IF admin_name IN c_data and admin_psd IN c_data:
+
+                OUTPUT(c_data[0], c_data[1])
+
+                SET flag TO 1
+
+
+
+        IF flag:
+
+            OUTPUT("\nYou have logged IN successfully.\n")
+
+            all_admin_functions()
+
+        ELSE:
+
+            OUTPUT("\nAccess Denied !!!\n")
+
+
+
+
+
+# Admin menu
+
+DEFINE FUNCTION all_admin_functions():
+
+    OUTPUT("""\n
+
+  ----------Admin Menu ------------\n
+
+    1. Verify Customer Requests
+
+    2. Verify Loan Requests
+
+    3. View Transactions
+
+    4. Go to Main Menu
+
+    \n""")
+
+    TRY:
+
+        SET ch TO int(INPUT("Select what you want to do: "))
+
+    EXCEPT:
+
+        OUTPUT("\nNumber INPUT are only acceptable !!!\n")
+
+        all_admin_functions()
+
+    ELSE:
+
+        IF ch EQUALS 1:
+
+            DEFINE FUNCTION verify_customer_request():  # verify customer requests
+
+
+
+                view_unverified_req()
+
+                SET verify_req TO INPUT("\nDo you want to verify user request (y/n) ?  ")
+
+                WHILE verify_req EQUALS 'y':
+
+
+
+                    SET username TO INPUT("Enter username: ")
+
+                    IF verify_customers(username):
+
+                        OUTPUT(f"\n{username} has been verified...\n")
+
+                        verify_customer_request()
+
+                all_admin_functions()
+
+
+
+            verify_customer_request()
+
+
+
+
+
+        ELSEIF ch EQUALS 2:
+
+            DEFINE FUNCTION verify_loan_request():  # providing unique loan id and verifying loan requests
+
+                placing_loan_id_in_file()  # calling generated loan id to write IN file
+
+                view_unverified_loan()
+
+                SET verify_loan TO INPUT("\nDo you want to verify user loans (y/n) ?")
+
+                WHILE verify_loan EQUALS 'y':
+
+                    SET loan_id TO INPUT("Enter Loan ID: ")
+
+
+
+                    IF verify_user_loan_id(
+
+                            loan_id):  # calling function that verify requested user id and write IN a file
+
+                        IF placing_installment_date(loan_id):  # calling function that place installment data IN a file
+
+                            IF calculates_loan_emi(
+
+                                    loan_id):  # calling function that writes loan calculation details IN a file
+
+                                OUTPUT(f"\n Loan ID '{loan_id}' has been verified...\n")
+
+                            verify_loan_request()
+
+                all_admin_functions()
+
+
+
+            verify_loan_request()
+
+
+
+        ELSEIF ch EQUALS 3:
+
+            view_transactions_menu()
+
+        ELSE:
+
+            main_menu()
+
+
+
+
+
+DEFINE FUNCTION view_transactions_menu():  # view transactions menu
+
+    OUTPUT("""
+
+------ Transactions View Menu -------\n    
+
+    1. View by Specific Customers
+
+    2. View by Specific Loan Type
+
+    3. View of all customer
+
+    4. View transaction of all types Loan
+
+    5. Go to Admin Menu
+
+    """)
+
+    SET ch TO int(INPUT("\nSelect what you want to do (1-4):"))
+
+    IF ch EQUALS 1:
+
+        view_of_specific_customers()
+
+    ELSEIF ch EQUALS 2:
+
+        view_of_specific_loan_type()
+
+    ELSEIF ch EQUALS 3:
+
+        view_of_all_customers()
+
+    ELSEIF ch EQUALS 4:
+
+        view_transactions_of_all_types_loan()
+
+    ELSE:
+
+        all_admin_functions()
+
+
+
+
+
+DEFINE FUNCTION goto_view_transactions_menu():  # go back to admin menu
+
+    SET inp_user TO INPUT("\nDo you want to go back to previous menu (y/n)?")
+
+    IF inp_user EQUALS 'y':
+
+        view_transactions_menu()
+
+    ELSE:
+
+        sys.exit()
+
+
+
+
+
+DEFINE FUNCTION view_of_specific_customers():
+
+    SET user_name TO INPUT("Enter username: ")
+
+    SET loan_details TO reading_file_data('applied_loan.txt', 'r')
+
+    SET table_data TO []
+
+    FOR loan_data IN loan_details:
+
+        IF loan_data[2] EQUALS user_name:
+
+            SET titled_data TO loan_data[1], loan_data[2], loan_data[4], loan_data[5], loan_data[6] + ' years', loan_data[
+
+                7] + ' %', loan_data[8], loan_data[9]
+
+            table_data.append(titled_data)
+
+    SET title TO ['Loan Id', 'Username', 'Loan Types', 'Applied Loan Amt', 'Loan Tenure', 'Loan Rate', 'Installment Amt',
+
+             'Due Amt']
+
+    OUTPUT(tabulate.tabulate(table_data, headers=title, tablefmt="github"))
+
+    goto_view_transactions_menu()
+
+
+
+
+
+DEFINE FUNCTION view_of_specific_loan_type():  # view transactions of specific loan type
+
+    SET loan_type TO INPUT("\nEnter types of loan: ")
+
+    SET loan_details TO reading_file_data('applied_loan.txt', 'r')  # calling reading_file_data
+
+    SET table_data TO []
+
+    FOR loan_data IN loan_details:
+
+        IF loan_type IN loan_data:  # checking userid and IF it finds, functions other task on the vary line
+
+            SET titled_data TO loan_data[1], loan_data[2], loan_data[4], loan_data[5], loan_data[6] + ' years', loan_data[
+
+                7] + ' %', loan_data[8], loan_data[9]
+
+            table_data.append(titled_data)
+
+    SET title TO ['Loan Id', 'Username', 'Loan Types', 'Applied Loan Amt', 'Loan Tenure', 'Loan Rate', 'Installment Amt',
+
+             'Due Amt']
+
+    OUTPUT(tabulate.tabulate([titled_data], headers=title, tablefmt="github"))
+
+    goto_view_transactions_menu()
+
+
+
+
+
+DEFINE FUNCTION view_of_all_customers():  # view transactions data of all customers
+
+    SET loan_details TO reading_file_data('applied_loan.txt', 'r')  # calling reading_file_data
+
+    SET table_data TO []
+
+    FOR loan_data IN loan_details:
+
+        IF loan_data[-1] EQUALS 'Verified':
+
+            SET titled_data TO loan_data[1], loan_data[2], loan_data[4], loan_data[5], loan_data[6] + ' years', loan_data[
+
+                7] + ' %', loan_data[8], loan_data[9]
+
+            table_data.append(titled_data)
+
+    SET title TO ['Loan Id', 'Username', 'Loan Types', 'Applied Loan Amt', 'Loan Tenure', 'Loan Rate', 'Installment Amt',
+
+             'Due Amt']
+
+    OUTPUT(tabulate.tabulate([titled_data], headers=title, tablefmt="github"))  # using tabulate module to make table
+
+    goto_view_transactions_menu()
+
+
+
+
+
+DEFINE FUNCTION view_transactions_of_all_types_loan():
+
+    view_of_all_customers()
+
+    goto_view_transactions_menu()
+
+
+
+
+
+DEFINE FUNCTION verify_customers(username):  # verify requested userid
+
+    with open('details.txt', 'r+') as file:
+
+
+
+        SET customer_details TO file.readlines()
+
+
+
+        FOR elem IN range(len(customer_details)):
+
+            IF username IN customer_details[elem]:  # checking IF username
+
+                SET user_data TO customer_details[elem].split(',')
+
+                SET user_data[-1] TO user_data[-1].replace(user_data[-1][:5],
+
+                                                      'Verified')  # changing unverified to verified of the searched user
+
+
+
+                SET str_ud TO ','.join([str(e) FOR e IN user_data])  # converting user data into string
+
+                SET customer_details[elem] TO customer_details[elem].replace(str(customer_details[elem]), str_ud)
+
+        file.seek(0)
+
+        file.writelines(customer_details)
+
+    RETURN True
+
+
+
+
+
+DEFINE FUNCTION view_unverified_req():
+
+    SET c_list TO reading_file_data('details.txt', 'r')
+
+    SET pending_users TO []
+
+    FOR ele IN c_list:
+
+        IF ele[-1] EQUALS "False":
+
+            pending_users.append(ele)
+
+    SET title TO ["Name", "Address", "E-mail", "Contact No.", "Gender", "DOB", "Username", "Password", "Is Admin",
+
+             "User Status"]
+
+    OUTPUT(tabulate.tabulate(pending_users, title, tablefmt="github"))
+
+
+
+
+
+# ------------------------------------------------------
+
+
+
+DEFINE FUNCTION generate_loan_id():  # function that generates unique loan id
+
+    SET unique_loan_id TO str(uuid4())
+
+    SET splt_loan_id TO unique_loan_id.split('-')
+
+    SET loan_id TO 'LiD-' + ''.join(splt_loan_id[4])
+
+    RETURN loan_id
+
+
+
+
+
+# ------------------------------------------------------
+
+DEFINE FUNCTION placing_loan_id_in_file():  # placing user loan id IN the file
+
+    with open('applied_loan.txt', 'r+') as file:
+
+        SET loan_details TO file.readlines()
+
+        FOR elem IN range(len(loan_details)):
+
+            SET loan_data TO loan_details[elem].split(',')
+
+            IF len(loan_data) < 7:  # total element with loanid IN one line of loan_details.txt is 7  so IF more it does not give unique id
+
+                loan_data.insert(1, generate_loan_id())  # inserting called unique loan id
+
+            SET str_loan_data TO ','.join([str(e) FOR e IN loan_data])  # converting user data into comma separated string
+
+            SET loan_details[elem] TO loan_details[elem].replace(str(loan_details[elem]),
+
+                                                            str_loan_data)  # replacing the whole data
+
+        file.seek(0)
+
+        file.writelines(loan_details)
+
+
+
+
+
+DEFINE FUNCTION placing_installment_date(loan_id):  # verify user loan id
+
+    with open('applied_loan.txt', 'r+') as file:
+
+
+
+        SET loan_details TO file.readlines()
+
+
+
+        FOR elem IN range(len(loan_details)):
+
+            IF loan_id IN loan_details[elem]:  # checking userid and IF it finds, functions other task on the vary line
+
+
+
+                #  finding installment date
+
+                SET loan_data TO loan_details[elem].split(',')
+
+                SET loan_data[0] TO loan_data[0].split('-')
+
+                SET loan_data[0] TO ','.join(loan_data[0])
+
+                loan_data[0].replace(',', '-')
+
+                SET joined_date TO datetime.datetime.strptime(loan_data[0], "%Y,%m,%d")
+
+                SET days_in_month TO calendar.monthrange(joined_date.year, joined_date.month)[1]
+
+                SET installment_date TO str(joined_date + datetime.timedelta(days=days_in_month)).split(' ')[0]
+
+                SET loan_data[0] TO loan_data[0].replace(str(loan_data[0]), str(joined_date).split(' ')[0])
+
+                loan_data.insert(3, installment_date)  # inserting installment date IN file
+
+                SET str_loan_data TO ','.join([str(e) FOR e IN loan_data])  # converting user data into string
+
+                SET loan_details[elem] TO loan_details[elem].replace(str(loan_details[elem]), str_loan_data)
+
+        file.seek(0)
+
+        file.writelines(loan_details)
+
+    RETURN True
+
+
+
+
+
+DEFINE FUNCTION calculates_loan_emi(loan_id):  # verify user loan id
+
+    with open('applied_loan.txt', 'r+') as file:
+
+
+
+        SET loan_details TO file.readlines()
+
+
+
+        FOR elem IN range(len(loan_details)):
+
+            IF loan_id IN loan_details[elem]:
+
+                SET loan_data TO loan_details[elem].split(',')
+
+                SET proposed_loan_amt TO float(loan_data[5])  # loan amt from file
+
+                SET loan_tenure TO int(loan_data[6])  # laon tenure from file
+
+                SET loan_types TO loan_data[4]  # loan_types from file
+
+
+
+                IF loan_types EQUALS 'Car Loan':
+
+                    IF loan_tenure <= 5:
+
+                        SET loan_rate TO 11.02
+
+                    ELSEIF loan_tenure <= 10:
+
+                        SET loan_rate TO 12.52
+
+                    ELSE:
+
+                        OUTPUT("Loan period is out of range !!!")
+
+
+
+                ELSEIF loan_types EQUALS 'Education Loan':
+
+                    IF loan_tenure <= 5:
+
+                        SET loan_rate TO 11.32
+
+                    ELSEIF loan_tenure <= 10:
+
+                        SET loan_rate TO 12.32
+
+                    ELSE:
+
+                        OUTPUT("Loan period is out of range !!!")
+
+
+
+                ELSEIF loan_types EQUALS 'Home Loan':
+
+                    IF loan_tenure <= 5:
+
+                        SET loan_rate TO 11.32
+
+                    ELSEIF loan_tenure <= 10:
+
+                        SET loan_rate TO 12.32
+
+                    ELSEIF loan_tenure > 10:
+
+                        SET loan_rate TO 12.50
+
+
+
+                ELSEIF loan_types EQUALS 'Personal Loan':
+
+                    IF loan_tenure <= 5:
+
+                        SET loan_rate TO 10.50
+
+                    ELSEIF loan_tenure <= 10:
+
+                        SET loan_rate TO 11.50
+
+                    ELSE:
+
+                        OUTPUT("Loan period is out of range !!!")
+
+
+
+                SET no_mnths TO loan_tenure * 12
+
+                SET r TO loan_rate / (12 * 100)  # calculates interest rate per month
+
+                SET emi TO proposed_loan_amt * r * ((1 + r) ** no_mnths) / (
+
+                            (1 + r) ** no_mnths - 1)  # calculates Equated Monthly Installment (EMI)
+
+                SET total_loan_amt TO emi * no_mnths
+
+
+
+                loan_data.insert(7, loan_rate)
+
+                loan_data.insert(8, round(emi, 3))
+
+                loan_data.insert(9, round(total_loan_amt, 3))
+
+
+
+                SET str_loan_data TO ','.join([str(e) FOR e IN loan_data])  # converting user data into string
+
+                SET loan_details[elem] TO loan_details[elem].replace(str(loan_details[elem]), str_loan_data)
+
+        file.seek(0)
+
+        file.writelines(loan_details)
+
+    RETURN True
+
+
+
+
+
+# ------------------------------------------------------
+
+DEFINE FUNCTION get_installment_date():  # Finding next month installment date
+
+    SET c_list TO reading_file_data('applied_loan.txt', 'r')
+
+
+
+    FOR loaned_date IN c_list:
+
+        SET loaned_date[0] TO str(loaned_date[0]).split('-')
+
+        SET loaned_date[0] TO ','.join(loaned_date[0])
+
+
+
+    SET loaned_date[0] TO loaned_date[0].replace(',', '-')
+
+    SET loan_borrowed_date TO datetime.datetime.strptime(loaned_date[0], "%Y,%m,%d")
+
+    SET days_in_month TO calendar.monthrange(loan_borrowed_date.year, loan_borrowed_date.month)[1]
+
+    SET installment_date TO str(loan_borrowed_date + datetime.timedelta(days=days_in_month)).split(' ')[0]
+
+    RETURN installment_date
+
+
+
+
+
+# ------------------------------------------------------
+
+DEFINE FUNCTION view_unverified_loan():  # verify unverified loans
+
+    placing_loan_id_in_file()  # calling generated loan id to write IN file
+
+    SET loan_list TO reading_file_data('applied_loan.txt', 'r')
+
+    SET pending_loans TO []
+
+    FOR ele IN loan_list:
+
+        IF ele[-1] EQUALS "False":
+
+            pending_loans.append(ele)
+
+    SET title TO ["Applied Date", "Loan ID", "Username", "Loan Type", "Loan Amount", "Loan Tenure", "Loan Status"]
+
+    OUTPUT(tabulate.tabulate(pending_loans, title, tablefmt="github"))
+
+
+
+
+
+DEFINE FUNCTION verify_user_loan_id(loan_id):  # verify user loan id
+
+    with open('applied_loan.txt', 'r+') as file:
+
+
+
+        SET loan_details TO file.readlines()
+
+
+
+        FOR elem IN range(len(loan_details)):
+
+            IF loan_id IN loan_details[elem]:  # checking userid and IF it finds, functions other task on the vary line
+
+                SET loan_data TO loan_details[elem].split(',')
+
+                SET loan_data[-1] TO loan_data[-1].replace(loan_data[-1][:5],
+
+                                                      'Verified')  # changing unverified to verified of the searched user
+
+                SET str_loan_data TO ','.join([str(e) FOR e IN loan_data])  # converting user data into string
+
+                SET loan_details[elem] TO loan_details[elem].replace(str(loan_details[elem]), str_loan_data)
+
+        file.seek(0)
+
+        file.writelines(loan_details)
+
+
+
+    RETURN True
+
+
+
+
+
+# ***********New customer Functions**********************
+
+DEFINE FUNCTION new_customer_functions():
+
+    WHILE True:
+
+        TRY:
+
+            OUTPUT("""
+
+            -------New Customer's Menu------\n
+
+                1. Check Loan Details
+
+                2. Loan Calculator
+
+                3. Register new Account
+
+                4. Go to Main Menu
+
+            """)
+
+            SET new_customer_func TO int(INPUT("\nSelect what you want to do (1-4):"))
+
+        except ValueError:
+
+            OUTPUT("Number Input are only acceptable !!!")
+
+        ELSE:
+
+            IF new_customer_func EQUALS 1:  # Check loan Details
+
+                show_loan_details()
+
+            ELSEIF new_customer_func EQUALS 2:  # Loan Calculator
+
+                emi_calculation()
+
+            ELSEIF new_customer_func EQUALS 3:  # Register new Account
+
+                register_new_account()
+
+
+
+            ELSEIF new_customer_func EQUALS 4:  # main menu
+
+                main_menu()
+
+
+
+
+
+DEFINE FUNCTION new_customer_menu():
+
+    SET inp_user TO INPUT("\nDo you want to go back to previous menu (y/n)?")
+
+    IF inp_user EQUALS 'y':
+
+        new_customer_functions()
+
+    ELSE:
+
+        sys.exit()
+
+
+
+
+
+# age eligibitlity
+
+DEFINE FUNCTION calculate_age():
+
+    WHILE True:
+
+        TRY:
+
+            SET dob TO datetime.datetime.strptime(INPUT("Date of birth (yyyy mm dd): "), "%Y %m %d")
+
+        except ValueError:
+
+            OUTPUT("\nDate is not IN correct format !!!\n")
+
+        ELSE:
+
+            SET today TO datetime.datetime.today()
+
+            SET age TO today.year - dob.year
+
+
+
+            IF age > 18:
+
+                SET dob TO str(dob).split(' ')[0]  # splitting date and time
+
+                RETURN dob
+
+                break
+
+
+
+            ELSE:
+
+                OUTPUT("Minimum age limit FOR loan is 18 years !!!\n")
+
+
+
+
+
+DEFINE FUNCTION check_username():
+
+    WHILE True:
+
+        SET usr_name TO INPUT("Username: ")
+
+
+
+        with open('details.txt', 'r') as fo:
+
+
+
+            SET customer_list TO fo.read()
+
+            SET customer_list TO list(
+
+                filter(None, customer_list.split('\n')))  # splitting by new line and removing empty strings from list
+
+            SET flag TO 0
+
+            TRY:
+
+                FOR ele IN customer_list:
+
+                    SET ele TO ele.split(',')
+
+                    IF usr_name EQUALS ele[6]:  # checking IF username is IN the index 9 of file
+
+                        SET flag TO 1
+
+            EXCEPT:
+
+                RETURN usr_name
+
+                break
+
+            ELSE:
+
+                IF not flag:
+
+                    RETURN usr_name  # RETURN new user name
+
+                    break
+
+                ELSE:
+
+                    OUTPUT("\nUsername is already available.. Tryout next username !!!\n")
+
+                # RETURN True
+
+
+
+
+
+DEFINE FUNCTION check_user_password():
+
+    SET pswd_pattern TO '(?=.*[A-Z]+)(?=.*\d+)(?=.*[!@#$%^.&*]+)(?!.*\s)'  # password only includes upper case letters, digits, specific symbols and ignore whitespace
+
+    WHILE 1:
+
+        SET usr_pswd TO INPUT("Enter password: ")
+
+        IF len(usr_pswd) < 8:
+
+            OUTPUT("\nYour password must be 8-16 characters long !!!\n")
+
+        ELSEIF not re.search(pswd_pattern, usr_pswd):  # check password and password pattern are satified or not
+
+            OUTPUT("\nPassword must contain uppercase, number and special symbols !!!\n")
+
+        ELSE:
+
+            SET usr_confirm_pswd TO INPUT("Enter Confirm Password: ")
+
+
+
+            IF usr_pswd EQUALS usr_confirm_pswd:
+
+                RETURN usr_confirm_pswd
+
+                break
+
+
+
+            ELSE:
+
+                OUTPUT("\nPassword and confirm password is not same.\n")
+
+
+
+
+
+DEFINE FUNCTION register_new_account():
+
+    # reading file and also checking existence. If not, file is created.
+
+    TRY:
+
+        SET fp TO open('details.txt', 'r')
+
+    except FileNotFoundError:
+
+        SET fp TO open('details.txt', 'w')
+
+    ELSE:
+
+        IF fp:
+
+            fp.close()
+
+            SET fp TO open("details.txt", "a")
+
+
+
+    OUTPUT("Please fill out the following requirements to be a new customer: \n ")
+
+    SET full_name TO INPUT("Name: ")
+
+    SET address TO INPUT("Address: ")
+
+    SET email_ad TO INPUT("E-mail: ")
+
+    SET contact_no TO int(INPUT("Contact no.: "))
+
+    SET gender TO INPUT("Gender: ")
+
+    SET date_of_birth TO calculate_age()  # calling age_eligibility functions
+
+    SET user_name TO check_username()  # calls a unique username
+
+    SET user_password TO check_user_password()
+
+    SET is_admin TO False
+
+    SET active_user TO False
+
+    SET user_info TO f"{full_name.title()},{address.title()},{email_ad},{contact_no},{gender.title()},{date_of_birth},{user_name},{user_password},{is_admin},{active_user}\n"
+
+    OUTPUT(f"\n{full_name.title()}, Thank you FOR creating an account ...\n")
+
+    fp.write(user_info)
+
+    fp.close()
+
+    new_customer_menu()
+
+
+
+
+
+DEFINE FUNCTION emi_calculation():  # emi calculator functions
+
+    SET loan_amt TO float(INPUT("Enter Loan amount: "))
+
+    SET loan_rate TO float(INPUT("Enter annual interest rate (%): "))
+
+    SET no_mnths TO int(INPUT("Enter number of months: "))
+
+    SET r TO loan_rate / (12 * 100)  # calculates interest rate per month
+
+    SET emi TO loan_amt * r * ((1 + r) ** no_mnths) / (
+
+                (1 + r) ** no_mnths - 1)  # calculates Equated Monthly Installment (EMI)
+
+
+
+    SET OUTPUT("Monthly Payment(EMI) TO %.2f" % emi)
+
+    new_customer_menu()
+
+
+
+
+
+# *******************Registered Customer Functions*************************
+
+DEFINE FUNCTION reg_customer_login():  # Registered customer login page
+
+    WHILE True:
+
+        SET usr_name TO INPUT("Username: ")
+
+        SET usr_psd TO INPUT("Password: ")
+
+        SET customer_list TO reading_file_data('details.txt', 'r')
+
+        FOR c_data IN customer_list:
+
+            IF usr_name != c_data[6] and usr_psd != c_data[7]:
+
+                OUTPUT("\nUsername and password is incorrect !!!\n")
+
+                break
+
+
+
+            ELSEIF (c_data[9] != 'Verified'):  # checking IF username is verified
+
+                OUTPUT(f"\nUsername {usr_name} has not been verified yet !!!\n")
+
+                break
+
+
+
+            ELSE:
+
+                OUTPUT("\nYou have logged IN successfully.\n")
+
+                registered_customer_menu(usr_name)
+
+
+
+
+
+DEFINE FUNCTION registered_customer_menu(usr_name):  # registered customer menu
+
+    WHILE 1:
+
+        OUTPUT("""
+
+    -------Registered Customer Menu-----\n
+
+        1. View Loan Details and Apply 
+
+        2. Pay Loan Installment
+
+        3. View Transaction
+
+        4. Status of Loan
+
+        5. Back to Main menu\n\n""")
+
+        TRY:
+
+            SET registered_customer_func TO int(INPUT("Select what you want to do (1-4):"))
+
+        except ValueError:
+
+            OUTPUT("\nNumber INPUTs are only acceptable !!!\n")
+
+        ELSE:
+
+            IF registered_customer_func EQUALS 1:
+
+                IF show_loan_details():
+
+                    apply_for_loan(usr_name)
+
+                    # registered_customer_menu(usr_name)
+
+
+
+            ELSEIF registered_customer_func EQUALS 2:
+
+                pay_loan_installment(usr_name)
+
+
+
+            ELSEIF registered_customer_func EQUALS 3:
+
+                view_transactions(usr_name)
+
+
+
+            ELSEIF registered_customer_func EQUALS 4:
+
+                status_of_loan(usr_name)
+
+
+
+            ELSEIF registered_customer_func EQUALS 5:
+
+                main_menu()
+
+
+
+
+
+DEFINE FUNCTION view_transactions(usr_name):
+
+    with open('applied_loan.txt', 'r+') as file:
+
+        SET loan_details TO file.readlines()
+
+        SET table_data TO []
+
+        FOR elem IN range(len(loan_details)):
+
+            IF usr_name IN loan_details[elem]:  # checking userid and IF it finds, functions other task on the vary line
+
+                SET loan_data TO loan_details[elem].split(',')
+
+                SET titled_data TO loan_data[10], loan_data[1], loan_data[2], loan_data[8], loan_data[9]
+
+                table_data.append(titled_data)
+
+        SET title TO ['Payment Date', 'Loan Id', 'User', 'Paid Amount', 'Due Amount']
+
+        OUTPUT(tabulate.tabulate(table_data, headers=title, tablefmt="github"))
+
+        goto_customer_menu(usr_name)
+
+
+
+
+
+DEFINE FUNCTION show_loan_details():  # Offered loan details by the bank
+
+    OUTPUT()
+
+    SET title TO "Loan Details"
+
+    OUTPUT(title.center(78, "-"))  # center "Loan Details" inside - appearance on both sides
+
+    OUTPUT()
+
+    SET loans TO [['Education Loan (HL)', '11.32%', '12.32%', '-'],
+
+             ['Car Loan (CL)', '11.02%', '12.52%', '-'],
+
+             ['Home Loan (HL)', '11.32%', '12.32%', '12.50%'],
+
+             ['Personal Loan (PL)', '10.50%', '11.50%', '-']]
+
+    SET title TO ['Loan Types', 'Upto 5 years', 'Upto 10 years', 'Above 10 years']
+
+    OUTPUT(tabulate.tabulate(loans, headers=title, tablefmt="github"))
+
+    RETURN True
+
+
+
+
+
+DEFINE FUNCTION apply_for_loan(usr_name):  # function that asks user details FOR loans
+
+    TRY:
+
+        SET fp TO open('applied_loan.txt', 'r')
+
+    except FileNotFoundError:
+
+        SET fp TO open("applied_loan.txt", "w")
+
+    ELSE:
+
+        IF fp:
+
+            fp.close()
+
+            SET fp TO open("applied_loan.txt", "a")
+
+
+
+    OUTPUT("\nFill the required fields to apply FOR loan !\n")
+
+    SET is_verified TO False
+
+    SET pick_loan_types TO available_loan_types()
+
+    SET proposed_loan TO float(INPUT("Proposed Loan: "))
+
+    SET loan_tenure TO int(INPUT("Tenure of Loans (in years): "))
+
+    SET loan_applied_date TO str(datetime.datetime.today()).split(' ')[0]
+
+    SET apply_loan TO f"{loan_applied_date},{usr_name},{pick_loan_types},{proposed_loan},{loan_tenure},{is_verified}\n"
+
+
+
+    OUTPUT("Your loan request has been sent successfully...\n")
+
+    fp.write(apply_loan)
+
+    fp.close()
+
+    goto_customer_menu(usr_name)  # RETURN to previous menu
+
+
+
+
+
+DEFINE FUNCTION available_loan_types():  # shows avalilable loans and asks users to choose loans
+
+    OUTPUT("\nChoose types of Loan:\n")
+
+    SET loan_lst TO ["1. Education Loan ", "2. Car Loan ", "3. Home Loan", "4. Personal Loan"]
+
+    FOR types IN loan_lst:
+
+        OUTPUT(f'  {types}')
+
+    WHILE True:
+
+        TRY:
+
+            SET ch TO int(INPUT("\n>>> "))
+
+        except ValueError:
+
+            OUTPUT("Number INPUT are only acceptable !!!")
+
+            available_loan_types()
+
+        ELSE:
+
+            IF ch EQUALS 1:
+
+                RETURN 'Education Loan'
+
+            ELSEIF ch EQUALS 2:
+
+                RETURN 'Car Loan'
+
+            ELSEIF ch EQUALS 3:
+
+                RETURN 'Home Loan'
+
+            ELSEIF ch EQUALS 4:
+
+                RETURN 'Personal Loan'
+
+
+
+
+
+DEFINE FUNCTION user_view_user_loans(usr_name):
+
+    SET loan_details TO reading_file_data('applied_loan.txt', 'r+')
+
+    SET title TO ['Loan Id', 'Username', 'Loan Types', 'Applied Loan Amt', 'Loan Tenure', 'Loan Rate', 'Installment Amount',
+
+             'Due Amount']
+
+    SET table_data TO []
+
+    FOR loan_data IN loan_details:
+
+        IF usr_name EQUALS loan_data[2]:
+
+            SET titled_data TO loan_data[1], loan_data[2], loan_data[4], loan_data[5], loan_data[6] + ' years', loan_data[
+
+                7] + ' %', loan_data[8], loan_data[9]
+
+            table_data.append(titled_data)
+
+    OUTPUT(tabulate.tabulate(table_data, headers=title, tablefmt="github"))  # OUTPUTing loan details of the user
+
+
+
+
+
+DEFINE FUNCTION pay_loan_installment(usr_name):  # loan installment payment
+
+    user_view_user_loans(usr_name)
+
+    SET loan_details TO reading_file_data('applied_loan.txt', 'r')
+
+    FOR loan_data IN loan_details:
+
+        IF usr_name EQUALS loan_data[2]:
+
+            SET loan_id TO INPUT("\nEnter loan id: ")
+
+            IF loan_id EQUALS loan_data[1]:
+
+                SET pay_installment TO INPUT(f"\nDo you want to pay montly installment of {loan_data[4]} (y/n) ?")
+
+
+
+                IF pay_installment EQUALS 'y':
+
+                    SET total_loan_amt_topay TO str(float(loan_data[9]) - float(loan_data[8]))
+
+                    SET loan_data[9] TO total_loan_amt_topay
+
+                    OUTPUT(f"{usr_name}, Rs.{loan_data[8]} installment amount has been paid successfully...")
+
+                ELSE:
+
+                    registered_customer_menu(usr_name)
+
+            break
+
+
+
+    with open('applied_loan.txt', 'w') as file:
+
+        FOR ele IN loan_details:
+
+            SET ele TO ','.join(ele)
+
+            file.write(ele + '\n')
+
+    goto_customer_menu(usr_name)
+
+
+
+
+
+DEFINE FUNCTION status_of_loan(usr_name):
+
+    SET loan_details TO reading_file_data('applied_loan.txt', 'r')  # calling reading_file_data
+
+    FOR loan_data IN loan_details:
+
+        IF usr_name IN loan_data:  # checking userid and IF it finds, functions other task on the vary line
+
+            OUTPUT(f"\n-----------Loan Details-------------\n")
+
+            OUTPUT(f"Username : {loan_data[2]}")
+
+            OUTPUT(f"Loan ID : {loan_data[1]}")
+
+            OUTPUT(f"Types of Loan: {loan_data[4]}")
+
+            OUTPUT(f"Applied Loan Amount : Rs.{loan_data[5]}")
+
+            OUTPUT(f"Rate FOR Loan Amount : {loan_data[7]}%")
+
+            OUTPUT(f"Loan Tenure: {loan_data[6]} years")
+
+            OUTPUT(f"Date of Loan Applied : {loan_data[0]}")
+
+            OUTPUT(f"Installment Date : {loan_data[3]}")
+
+            OUTPUT(f"Total loan amount to pay: Rs.{loan_data[9]}")
+
+            OUTPUT(f"Monthly Installment Amount : Rs.{loan_data[8]}\n")
+
+            goto_customer_menu(usr_name)
+
+
+
+
+
+DEFINE FUNCTION goto_customer_menu(usr_name):
+
+    SET inp_user TO INPUT("\nDo you want to go back to previous menu (y/n)?")
+
+    IF inp_user EQUALS 'y':
+
+        registered_customer_menu(usr_name)
+
+    ELSE:
+
+        sys.exit()
+
+
+
+
+
+DEFINE FUNCTION main_menu():
+
+    OUTPUT("\n\nMalaysia Bank Online Loan Management System (MBOLMS)\n\n")
+
+    WHILE True:
+
+        TRY:
+
+            OUTPUT("""
+
+      -------- Main Menu ----------    
+
+            1. Admin
+
+            2. New Customer 
+
+            3. Registered Customer 
+
+            4. Exit
+
+            """)
+
+            SET system_users TO int(INPUT("Select your login method from the following (1-3): "))
+
+            OUTPUT()
+
+
+
+            IF system_users EQUALS 1:  # Admin
+
+                admin_login()
+
+
+
+            ELSEIF system_users EQUALS 2:  # New customer
+
+                new_customer_functions()
+
+
+
+            ELSEIF system_users EQUALS 3:  # registered customer
+
+                reg_customer_login()
+
+
+
+            ELSEIF system_users EQUALS 4:
+
+                OUTPUT("Progarm has been closed successfully.\n")
+
+                sys.exit()
+
+
+
+            ELSE:
+
+                OUTPUT("You made the wrong choice. Please select the choice between 1-3 !!!\n\n")
+
+
+
+        except ValueError:
+
+            OUTPUT("\nNumber INPUT are only acceptable !!!\n")
+
+
+
+
+
+main_menu()
