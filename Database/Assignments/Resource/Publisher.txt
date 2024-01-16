@@ -1,0 +1,259 @@
+Publisher:
+Attributes: PublisherID (Primary Key), PublisherName, ContactPerson, ContactEmail, ContactPhone
+
+Book:
+Attributes: ISBN (Primary Key), Title, Author, Genre, PublicationYear, Price, QuantityInStock
+
+Order:
+Attributes: OrderID (Primary Key), OrderDate, TotalAmount, Status (e.g., pending, shipped)
+
+Warehouse:
+Attributes: WarehouseID (Primary Key), Location, Capacity
+
+BookOrder (Relationship between Book and Order):
+Attributes: QuantityOrdered
+Foreign Keys: ISBN (references Book), OrderID (references Order)
+
+Customer:
+Attributes: CustomerID (Primary Key), FirstName, LastName, Email, Password, RegistrationDate
+
+ShoppingCart:
+Attributes: CartID (Primary Key), TotalCost
+Foreign Key: CustomerID (references Customer)
+
+CartItem (Relationship between Book and ShoppingCart):
+Attributes: Quantity
+Foreign Keys: ISBN (references Book), CartID (references ShoppingCart)
+
+Receipt:
+Attributes: ReceiptID (Primary Key), PurchaseDate, TotalAmount
+Foreign Key: CustomerID (references Customer)
+
+Feedback:
+Attributes: FeedbackID (Primary Key), Score, Comment
+Foreign Keys: ISBN (references Book), CustomerID (references Customer)
+
+Website:
+Attributes: WebsiteID (Primary Key), URL
+
+UpdateLog (Relationship between Book and Website):
+Attributes: UpdateDate
+Foreign Keys: ISBN (references Book), WebsiteID (references Website)
+
+Invoice:
+Attributes: InvoiceID (Primary Key), IssueDate, DueDate, Amount
+Foreign Key: OrderID (references Order)
+
+Payment:
+Attributes: PaymentID (Primary Key), PaymentDate, Amount
+Foreign Key: InvoiceID (references Invoice)
+
+Shipping:
+Attributes: ShippingID (Primary Key), ShippedDate, EstimatedArrivalDate
+Foreign Key: OrderID (references Order)
+
+
+
+
+
+//extd version
+
+
+Publisher:
+Attributes:
+PublisherID (Primary Key)
+PublisherName
+ContactPerson
+ContactEmail
+ContactPhone
+
+Book:
+Attributes:
+ISBN (Primary Key)
+Title
+Author
+Genre
+PublicationYear
+Price
+QuantityInStock
+
+Order:
+Attributes:
+OrderID (Primary Key)
+OrderDate
+TotalAmount
+Status (e.g., pending, shipped)
+
+Warehouse:
+Attributes:
+WarehouseID (Primary Key)
+Location
+Capacity
+
+BookOrder (Relationship between Book and Order):
+Attributes:
+QuantityOrdered
+Foreign Keys:
+ISBN (references Book)
+OrderID (references Order)
+
+Customer:
+Attributes:
+CustomerID (Primary Key)
+FirstName
+LastName
+Email
+Password
+RegistrationDate
+
+ShoppingCart:
+Attributes:
+CartID (Primary Key)
+TotalCost
+Foreign Key:
+CustomerID (references Customer)
+
+CartItem (Relationship between Book and ShoppingCart):
+Attributes:
+Quantity
+Foreign Keys:
+ISBN (references Book)
+CartID (references ShoppingCart)
+
+Receipt:
+Attributes:
+ReceiptID (Primary Key)
+PurchaseDate
+TotalAmount
+Foreign Key:
+CustomerID (references Customer)
+
+Feedback:
+Attributes:
+FeedbackID (Primary Key)
+Score
+Comment
+Foreign Keys:
+ISBN (references Book)
+CustomerID (references Customer)
+
+Website:
+Attributes:
+WebsiteID (Primary Key)
+URL
+UpdateLog (Relationship between Book and Website):
+
+Attributes:
+UpdateDate
+Foreign Keys:
+ISBN (references Book)
+WebsiteID (references Website)
+
+Invoice:
+Attributes:
+InvoiceID (Primary Key)
+IssueDate
+DueDate
+Amount
+Foreign Key:
+OrderID (references Order)
+
+Payment:
+Attributes:
+PaymentID (Primary Key)
+PaymentDate
+Amount
+Foreign Key:
+InvoiceID (references Invoice)
+
+Shipping:
+Attributes:
+ShippingID (Primary Key)
+ShippedDate
+EstimatedArrivalDate
+Foreign Key:
+OrderID (references Order)
+
+Membership:
+Attributes:
+MembershipID (Primary Key)
+JoinDate
+Foreign Key:
+CustomerID (references Customer)
+
+Authentication:
+Attributes:
+AuthID (Primary Key)
+Token
+Foreign Key:
+CustomerID (references Customer)
+
+//
+Attributes List for ER Diagram with Relations:
+Entities:
+
+Books:
+ISBN (Primary Key)
+Title
+Author(s)
+Publisher
+Publication Date
+Edition
+Genre
+Summary
+Price
+Inventory Level
+Average Rating
+Number of Reviews
+
+Customers:
+Customer ID (Primary Key)
+Name
+Email Address
+Password
+Address
+Phone Number
+Order History
+
+Orders:
+Order ID (Primary Key)
+Customer ID (Foreign Key)
+Order Date
+Delivery Date
+Total Cost
+Payment Method
+Order Status
+
+Reviews:
+Review ID (Primary Key)
+Customer ID (Foreign Key)
+Book ISBN (Foreign Key)
+Rating (1-10)
+Review Text
+Submit Date
+
+Feedback:
+Feedback ID (Primary Key)
+Customer ID (Foreign Key)
+Book ISBN (Foreign Key)
+Rating (1-10)
+Feedback Text
+Submit Date
+Relationships:
+	Books-Orders: Many-to-Many (through an Order Items entity)
+
+
+Order Items:
+Order ID (Foreign Key)
+Book ISBN (Foreign Key)
+Quantity
+Relationships:
+	Customers-Orders: One-to-Many
+	Customers-Reviews: One-to-Many
+	Customers-Feedback: One-to-Many
+	Books-Reviews: One-to-Many
+
+Book:
+Reviews
+Books-Feedback: One-to-Many
+ 
