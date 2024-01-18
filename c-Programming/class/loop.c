@@ -102,20 +102,96 @@
 // }
 
 //wap to find out the  factrioal of the number given by the user
-int main(){
-    unsigned long int fact=1,c; //the unsigned  is used for to unassign the sign bit and log refers to data type thas hold 8bit intiger
-    printf("Enter any positive integer : ");
-    scanf("%d",&c);
+// int main(){
+//     unsigned long int fact=1,c; //the unsigned  is used for to unassign the sign bit and log refers to data type thas hold 8bit intiger
+//     printf("Enter any positive integer : ");
+//     scanf("%d",&c);
     
-    for(c;c!=1;c--){
-        fact=fact*c;
+//     for(c;c!=1;c--){
+//         fact=fact*c;
       
+//     }
+//     // while(c!=0)
+//     // {
+//     //     fact=fact*c;
+//     //     c--;
+//     //     }
+//         printf("%ld",fact);
+//     return 0;
+// }
+
+//
+
+
+///sum of entred number digits 
+
+// int main(){
+//     int num,rem, count=0,sum=0;
+//     printf("Enter a number: ");
+//     scanf("%d",&num);
+//     for(;num!=0;num=num/10) 
+//     {
+//         rem=num%10;
+//         sum=sum+rem;
+//         count++;
+//     }
+//     printf("The sum of the digits of the number is %d",sum);
+//     printf("\nThe number of digits of the number is %d",count);
+//     return 0;
+// }
+
+//sum of entered number even digit 
+
+
+// int main() {
+//     int num, rem, count = 0, sum = 0, even = 0, odd = 0;
+
+//     printf("Enter a number: ");
+//     scanf("%d", &num);
+
+//     for (; num != 0; num = num / 10) {
+//         rem = num % 10;
+//         sum = sum + rem;
+
+//         if (rem % 2 == 0) { //checking the digit is odd or even
+//             even = even + rem;
+//         } else {
+//             odd = odd + rem;
+//         }
+
+//         count++;
+//     }
+
+//     printf("The sum of the digits of the number is %d\n", sum);
+//     printf("The number of digits of the number is %d\n", count);
+//     printf("The sum of even digits of the number is %d\n", even);
+//     printf("The sum of odd digits of the number is %d\n", odd);
+
+//     return 0;
+// }
+
+
+//armstorong number
+
+int main() {
+    long n, temp, sum = 0, rem;
+
+    printf("Enter a number : \n");
+    scanf("%ld", &n);
+
+    temp = n;
+
+  for (; temp != 0; temp /= 10) {
+    rem = temp % 10;   
+    sum += rem * rem * rem;  
+}
+
+
+    if (sum == n) {
+        printf("\n The Number is an Armstrong Number.\n");
+    } else {
+        printf("\n The Number is not an Armstrong Number.\n");
     }
-    // while(c!=0)
-    // {
-    //     fact=fact*c;
-    //     c--;
-    //     }
-        printf("%ld",fact);
+
     return 0;
 }
