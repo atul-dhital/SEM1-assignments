@@ -173,25 +173,214 @@
 
 //armstorong number
 
-int main() {
-    long n, temp, sum = 0, rem;
+// int main() {
+//     long n, temp, sum = 0, rem;
 
-    printf("Enter a number : \n");
-    scanf("%ld", &n);
+//     printf("Enter a number : \n");
+//     scanf("%ld", &n);
 
-    temp = n;
+//     temp = n;
 
-  for (; temp != 0; temp /= 10) {
-    rem = temp % 10;   
-    sum += rem * rem * rem;  
-}
+//   for (; temp != 0; temp /= 10) {
+//     rem = temp % 10;   
+//     sum += rem * rem * rem;  
+// }
 
 
-    if (sum == n) {
-        printf("\n The Number is an Armstrong Number.\n");
-    } else {
-        printf("\n The Number is not an Armstrong Number.\n");
-    }
+//     if (sum == n) {
+//         printf("\n The Number is an Armstrong Number.\n");
+//     } else {
+//         printf("\n The Number is not an Armstrong Number.\n");
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
+
+
+
+//nested forloop
+// int main(){
+//     for(int i=1;i<=5;i++){
+//         for(int j=1;j<=5;j++){
+//             printf("*");
+//         }
+//         printf("\n");
+//     }
+//     return 0;
+// }
+/*wap yo to generate given format
+
+*
+**
+***
+****
+*****
+*/
+// int main(){
+//     for(int i=1;i<=5;i++){
+//         for(int j=1;j<=i;j++){
+//             printf("*");
+//         }
+// }
+// }
+
+//need to print 5555,4444,3333,2222,1111,
+//for that we can use nested loop and ASCII value of '0' is 48.
+// so we need to subtract 48 from the number and then convert it into char using ASCII
+//and then print it as a character.
+// int main(){
+//         int n = 5555;
+//         while (n != 0)
+//         {
+//             int rem = n % 10;
+//             for (int i = 1; i <= rem; i++)
+//             {
+//                 char ch = rem + 48;
+//                 printf("%c", ch);
+//             }
+//             n = n / 10;
+//         }
+//         return 0;
+//     }
+
+
+// int main(){
+//     for(int i=1;i<=5;i++){
+//         for(int j=1; j<=i;j++)
+//         {
+//             printf("*");
+//         }
+//         printf("\n");
+//     }
+// }
+
+
+/*to print 
+1
+22
+333
+4444
+55555*/
+// int main(){
+//     for(int i=1;i<=5;i++){
+//         for(int j=1; j<=i;j++)
+//         {
+//             printf("%d",i);
+//         }
+//         printf("\n");
+//     }
+// }
+/*to print 
+1
+12
+123
+1234
+12335*/
+
+// int main(){
+//     for(int i=1;i<=5;i++){
+//         for(int j=1; j<=i;j++)
+//         {
+//             printf("%d",j);
+//         }
+//         printf("\n");
+//     }
+// }
+
+/*to print 
+0
+12
+345
+6789
+*/
+// int main(){
+//     for(int i=0;i<=9;i++){
+//         for(int j=0; j<=i;j++)
+//         {
+//             printf("%d",j);
+//         }
+//         printf("\n");
+//     }
+//     return 0;
+// }
+
+/*
+A
+BB
+CCC
+DDDD
+*/
+// int main(){
+//     for(int i=1;i<=5;i++){
+//         for(int j=0; j<i;j++)
+//         {
+//             printf("A");
+//         }
+//         printf("\n");
+//     }
+//     return 0;
+// }
+
+
+
+
+
+
+
+
+//////while loop
+
+// int main(){
+//     int i=1;
+//     while(i<=5){
+//         for(int j=1; j<=i;j++)
+//         {
+//             printf("*");
+// }
+
+//     }
+//     }
+
+
+//Get a number from user untill he pressed no and add the entered numbers
+// int main(){
+//     int sum=0,n;
+//     while(1){
+//         printf("Enter a number:");
+//         scanf("%d",&n);
+//         sum=sum+n;
+//         printf("Do you want to continue?(1/0):");
+//         int choice;
+//         scanf("%d",&choice);
+//         if(choice==0){
+//             break;
+//         }
+//     }
+//     printf("Sum=%d",sum);
+//     return 0;
+// }
+
+
+
+//sum of enterd digit using while loop
+
+
+
+// int main(){
+//     int num,rem, count=0,sum=0;
+//     printf("Enter a number: ");
+//     scanf("%d",&num);
+// while(num!=0) 
+//     {
+//         rem=num%10;
+//         sum=sum+rem;
+//         count++;
+//         num=num/10;
+//     }
+//     printf("The sum of the digits of the number is %d",sum);
+//     printf("\nThe number of digits of the number is %d",count);
+//     return 0;
+// }
+//
+
+
