@@ -1,0 +1,4 @@
+Ram      NC      Kathmandu
+Shyam    CPNUML  Gorkha
+Hari    CPNUML(S) Chitwan
+Gopal    LP      Banke

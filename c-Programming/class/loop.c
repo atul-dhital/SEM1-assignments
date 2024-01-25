@@ -384,3 +384,19 @@ DDDD
 //
 
 
+// do while loop
+// int main(){
+//     int num,rem, count=0,sum=0;
+//     printf("Enter a number: ");
+//     scanf("%d",&num);
+//     do{
+//         rem=num%10;
+//         sum=sum+rem;
+//         count++;
+//         num=num/10;
+//     }while(num!=0);
+//     printf("The sum of the digits of the number is %d",sum);
+//     printf("\nThe number of digits of the number is %d",count);
+//     return 0;
+    
+// }
