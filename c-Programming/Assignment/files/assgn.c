@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+//9851266911 sir
 // Structures for storing data
 struct ElectionSchedule {
     char constituency[50];
