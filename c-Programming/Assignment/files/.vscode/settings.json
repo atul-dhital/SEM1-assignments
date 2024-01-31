@@ -1,0 +1,5 @@
+{
+  "terminal.integrated.localEchoStyle": "dim",
+  "editor.formatOnSave": true,
+  "clang-format.executable": "/absolute/path/to/clang-format"
+}

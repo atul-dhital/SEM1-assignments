@@ -1,14 +1,17 @@
+
 #include <stdio.h>
+
 #include <stdlib.h>
+
 #include <string.h>
-//9851266911 sir
-// Structures for storing data
+
 struct ElectionSchedule {
     char constituency[50];
-    char date[9]; 
+    char date[9];
 };
 
 struct Candidate {
+    int serialNumber;  
     char name[50];
     char party[50];
     char candidacyFrom[50];
@@ -18,12 +21,11 @@ struct Voter {
     int sno;
     int age;
     char name[50];
-    char dob[11]; 
+    char dob[11];
     char address[50];
     char password[20];
 };
 
-// Function prototypes
 void createElectionSchedule();
 void manageCandidates();
 void registerVoter();
@@ -34,7 +36,7 @@ void displayVoteResults();
 void adminMenu();
 void voterMenu();
 int authenticatevoter();
-// File names creation
+
 const char scheduleFileName[] = "schedule.txt";
 const char candidateFileName[] = "candidatelist.txt";
 const char voterFileName[] = "voterlist.txt";
@@ -42,7 +44,7 @@ const char voteCountFileName[] = "votecount.txt";
 const char adminPassword[] = "admin123";
 
 void createElectionSchedule() {
-    FILE *scheduleFile;
+    FILE * scheduleFile;
     struct ElectionSchedule schedule;
 
     scheduleFile = fopen(scheduleFileName, "a");
@@ -70,11 +72,13 @@ void createElectionSchedule() {
 
     fclose(scheduleFile);
 }
-
 void manageCandidates() {
-    FILE *candidateFile;
+    FILE * candidateFile, * tempFile;
     struct Candidate candidate;
     int choice;
+    int found = 0; 
+    char nameToUpdate[50];
+    char nameToDelete[50];
 
     do {
         printf("\nManage Candidates\n");
@@ -84,47 +88,124 @@ void manageCandidates() {
         printf("4. Back to Main Menu\n");
 
         printf("Enter your choice: ");
-        scanf("%d", &choice);
+        scanf("%d", & choice);
 
         switch (choice) {
-            case 1:
-                candidateFile = fopen(candidateFileName, "a");
+        case 1:
+            candidateFile = fopen(candidateFileName, "a");
 
-                if (candidateFile == NULL) {
-                    printf("Error opening candidate file.\n");
-                    return;
+            if (candidateFile == NULL) {
+                printf("Error opening candidate file.\n");
+                return;
+            }
+printf("Enter Candidate Serial Number: ");
+            scanf("%d", &candidate.serialNumber);
+
+            printf("Enter Candidate Name: ");
+            scanf("%s", candidate.name);
+
+            printf("Enter Political Party: ");
+            scanf("%s", candidate.party);
+
+            printf("Enter Candidacy From: ");
+            scanf("%s", candidate.candidacyFrom);
+
+            fprintf(candidateFile, "%s\t%s\t%s\n", candidate.name, candidate.party, candidate.candidacyFrom);
+
+            printf("Candidate added successfully.\n");
+
+            fclose(candidateFile);
+            break;
+
+        case 2: {
+            candidateFile = fopen(candidateFileName, "r");
+            tempFile = fopen("temp.txt", "w");
+
+            if (candidateFile == NULL || tempFile == NULL) {
+                printf("Error opening files.\n");
+                return;
+            }
+
+            printf("Enter Candidate Name to update: ");
+            scanf("%s", nameToUpdate);
+
+            while (fscanf(candidateFile, "%s %s %s\n", candidate.name, candidate.party, candidate.candidacyFrom) != EOF) {
+                if (strcmp(candidate.name, nameToUpdate) == 0) {
+                    found = 1;
+
+                    printf("Enter new details for the candidate:\n");
+                    printf("Enter Candidate Name: ");
+                    scanf("%s", candidate.name);
+
+                    printf("Enter Political Party: ");
+                    scanf("%s", candidate.party);
+
+                    printf("Enter Candidacy From: ");
+                    scanf("%s", candidate.candidacyFrom);
+
+                    fprintf(tempFile, "%s\t%s\t%s\n", candidate.name, candidate.party, candidate.candidacyFrom);
+                    printf("Candidate details updated successfully.\n");
+                } else {
+                    fprintf(tempFile, "%s\t%s\t%s\n", candidate.name, candidate.party, candidate.candidacyFrom);
                 }
+            }
 
-                printf("Enter Candidate Name: ");
-                scanf("%s", candidate.name);
+            fclose(candidateFile);
+            fclose(tempFile);
 
-                printf("Enter Political Party: ");
-                scanf("%s", candidate.party);
+            remove(candidateFileName);
+            rename("temp.txt", candidateFileName);
 
-                printf("Enter Candidacy From: ");
-                scanf("%s", candidate.candidacyFrom);
+            if (!found) {
+                printf("Candidate with name %s not found.\n", nameToUpdate);
+            }
+            break;
+        }
+        case 3: {
+            candidateFile = fopen(candidateFileName, "r");
+            tempFile = fopen("temp.txt", "w");
 
-                fprintf(candidateFile, "%s\t%s\t%s\n", candidate.name, candidate.party, candidate.candidacyFrom);
+            if (candidateFile == NULL || tempFile == NULL) {
+                printf("Error opening files.\n");
+                return;
+            }
 
-                printf("Candidate added successfully.\n");
+            printf("Enter Candidate Name to delete: ");
+            scanf("%s", nameToDelete);
 
-                fclose(candidateFile);
-                break;
-            // Implement update and delete cases
-            // ...
-            case 4:
-                printf("Returning to the main menu.\n");
-                break;
-            default:
-                printf("Invalid choice. Please enter a number between 1 and 4.\n");
+            while (fscanf(candidateFile, "%s %s %s\n", candidate.name, candidate.party, candidate.candidacyFrom) != EOF) {
+                if (strcmp(candidate.name, nameToDelete) == 0) {
+                    found = 1;
+                    printf("Candidate %s deleted successfully.\n", nameToDelete);
+                } else {
+                    fprintf(tempFile, "%s\t%s\t%s\n", candidate.name, candidate.party, candidate.candidacyFrom);
+                }
+            }
+
+            fclose(candidateFile);
+            fclose(tempFile);
+
+            remove(candidateFileName);
+            rename("temp.txt", candidateFileName);
+
+            if (!found) {
+                printf("Candidate with name %s not found.\n", nameToDelete);
+            }
+            break;
+        }
+        case 4:
+            printf("Returning to the main menu.\n");
+            break;
+        default:
+            printf("Invalid choice. Please enter a number between 1 and 4.\n");
         }
     } while (choice != 4);
 }
 
 void registerVoter() {
-    FILE *voterFile;
+    FILE * voterFile;
     struct Voter voter;
-    int age;
+    int agec;
 
     voterFile = fopen(voterFileName, "a");
 
@@ -132,37 +213,36 @@ void registerVoter() {
         printf("Error opening voter file.\n");
         return;
     }
-printf("please enter the voter AGE");
-scanf("%d",age);
-if(age>=18){
-  printf("Enter Voter Serial Number: ");
-    scanf("%d", &voter.sno);
+    printf("Please enter the voter AGE:");
+    scanf("%d", &agec);
+    if (agec >= 18) {
+        printf("Enter Voter Serial Number: ");
+        scanf("%d", & voter.sno);
 
-    printf("Enter Voter Name: ");
-    scanf("%s", voter.name);
+        printf("Enter Voter Name: ");
+        scanf("%s", voter.name);
 
-    printf("Enter Date of Birth (yyyy/mm/dd): ");
-    scanf("%s", voter.dob);
+        printf("Enter Date of Birth (yyyy/mm/dd): ");
+        scanf("%s", voter.dob);
 
-    printf("Enter Address: ");
-    scanf("%s", voter.address);
+        printf("Enter Address: ");
+        scanf("%s", voter.address);
 
-    printf("Enter Password: ");
-    scanf("%s", voter.password);
+        printf("Enter Password: ");
+        scanf("%s", voter.password);
 
-    fprintf(voterFile, "%d\t%s\t%s\t%s\t%s\n", voter.sno, voter.name, voter.dob, voter.address, voter.password);
+        fprintf(voterFile, "%d\t%s\t%s\t%s\t%s\n", voter.sno, voter.name, voter.dob, voter.address, voter.password);
 
-    printf("Voter registered successfully.\n");
+        printf("Voter registered successfully.\n");
 
-    fclose(voterFile);
-}
-else{
-    printf("Invilde AGE");
-}
+        fclose(voterFile);
+    } else {
+        printf("\nInvilde AGE\n");
+    }
 }
 
 void updateVoterDetails() {
-    FILE *voterFile, *tempFile;
+    FILE * voterFile, * tempFile;
     struct Voter voter;
     int sno, found = 0;
 
@@ -175,9 +255,9 @@ void updateVoterDetails() {
     }
 
     printf("Enter Voter Serial Number to update details: ");
-    scanf("%d", &sno);
+    scanf("%d", & sno);
 
-    while (fscanf(voterFile, "%d %s %s %s %s\n", &voter.sno, voter.name, voter.dob, voter.address, voter.password) != EOF) {
+    while (fscanf(voterFile, "%d %s %s %s %s\n", & voter.sno, voter.name, voter.dob, voter.address, voter.password) != EOF) {
         if (voter.sno == sno) {
             found = 1;
 
@@ -213,7 +293,7 @@ void updateVoterDetails() {
 }
 
 void searchVoterDetails() {
-    FILE *voterFile;
+    FILE * voterFile;
     struct Voter voter;
     int sno, found = 0;
 
@@ -225,9 +305,9 @@ void searchVoterDetails() {
     }
 
     printf("Enter Voter Serial Number to search details: ");
-    scanf("%d", &sno);
+    scanf("%d", & sno);
 
-    while (fscanf(voterFile, "%d %s %s %s %s\n", &voter.sno, voter.name, voter.dob, voter.address, voter.password) != EOF) {
+    while (fscanf(voterFile, "%d %s %s %s %s\n", & voter.sno, voter.name, voter.dob, voter.address, voter.password) != EOF) {
         if (voter.sno == sno) {
             found = 1;
             printf("\nVoter Details:\n");
@@ -235,9 +315,9 @@ void searchVoterDetails() {
             printf("Name: %s\n", voter.name);
             printf("Date of Birth: %s\n", voter.dob);
             printf("Address: %s\n", voter.address);
-            // Do not print the password for security reasons
+
             printf("-------------------------------\n");
-            break; // No need to continue searching once found
+            break; 
         }
     }
 
@@ -265,14 +345,10 @@ void castVote() {
     printf("Enter your Voter Serial Number: ");
     scanf("%d", &voter.sno);
 
-    // Authenticate the voter (Check if the voter is registered)
-    // This part is not implemented in the example. You may need to add authentication logic.
-
     printf("\nList of Candidates:\n");
 
-    // Display candidates from the file
-    while (fscanf(candidateFile, "%s %s %s\n", candidate.name, candidate.party, candidate.candidacyFrom) != EOF) {
-        printf("%s - %s\n", candidate.name, candidate.party);
+    while (fscanf(candidateFile, "%d %s %s %s\n", &candidate.serialNumber, candidate.name, candidate.party, candidate.candidacyFrom) != EOF) {
+        printf("%d - %s - %s\n", candidate.serialNumber, candidate.name, candidate.party);
     }
 
     fclose(candidateFile);
@@ -286,10 +362,6 @@ void castVote() {
             return;
         }
 
-        // Validate the candidate choice
-        // This part is not implemented in the example. You may need to add validation logic.
-
-        // Record the vote in the votecount.txt file
         fprintf(voteCountFile, "%d\t%d\n", voter.sno, choice);
         printf("Vote recorded successfully.\n");
         voted = 1;
@@ -301,6 +373,7 @@ void castVote() {
 
 void displayVoteResults() {
     FILE *voteCountFile;
+    int candidateVotes[100] = {0};  
     int voterSno, candidateSno;
 
     voteCountFile = fopen(voteCountFileName, "r");
@@ -310,15 +383,22 @@ void displayVoteResults() {
         return;
     }
 
-    printf("\nVote Results:\n");
-
-    // Display the details of the votes from the file
     while (fscanf(voteCountFile, "%d %d\n", &voterSno, &candidateSno) != EOF) {
-        printf("Voter Serial Number: %d, Voted for Candidate Serial Number: %d\n", voterSno, candidateSno);
+        if (candidateSno >= 1 && candidateSno <= 100) {  
+            candidateVotes[candidateSno - 1]++;  
+        }
     }
 
     fclose(voteCountFile);
+
+    printf("\nVote Results:\n");
+    for (int i = 0; i < 100; i++) {
+        if (candidateVotes[i] > 0) {
+            printf("Candidate Serial Number %d received %d votes.\n", i + 1, candidateVotes[i]);
+        }
+    }
 }
+
 int main() {
     int roleChoice;
 
@@ -327,22 +407,22 @@ int main() {
     printf("2. voter\n");
     printf("3. Exit\n");
     printf("Enter your role (1 for Admin, 2 for voter, 3 to Exit): ");
-    scanf("%d", &roleChoice);
+    scanf("%d", & roleChoice);
 
     switch (roleChoice) {
-        case 1:
-            // Admin login
-            adminMenu();
-            break;
-        case 2:
-            // voter login
-            voterMenu();
-            break;
-        case 3:
-            printf("Exiting the program. Goodbye!\n");
-            break;
-        default:
-            printf("Invalid choice. Please enter 1, 2, or 3.\n");
+    case 1:
+
+        adminMenu();
+        break;
+    case 2:
+
+        voterMenu();
+        break;
+    case 3:
+        printf("Exiting the program. Goodbye!\n");
+        break;
+    default:
+        printf("Invalid choice. Please enter 1, 2, or 3.\n");
     }
 
     return 0;
@@ -357,7 +437,7 @@ void adminMenu() {
         int choice;
 
         do {
-            printf("\nVOTING SYSTEM\n");
+            printf("\nAdmin Dashboard\n");
             printf("1. Create Election Schedule\n");
             printf("2. Manage Candidates\n");
             printf("3. Register Voter\n");
@@ -367,96 +447,90 @@ void adminMenu() {
             printf("7. Display Vote Results\n");
             printf("8. Exit\n");
             printf("Enter your choice: ");
-            scanf("%d", &choice);
+            scanf("%d", & choice);
 
             switch (choice) {
-                case 1:
-                    createElectionSchedule();
-                    break;
-                case 2:
-                    manageCandidates();
-                    break;
-                case 3:
-                    registerVoter();
-                    break;
-                case 4:
-                    updateVoterDetails();
-                    break;
-                case 5:
-                    searchVoterDetails();
-                    break;
-                case 6:
-                    castVote();
-                    break;
-                case 7:
-                    displayVoteResults();
-                    break;
-                case 8:
-                    printf("Exiting the program. Goodbye!\n");
-                    break;
-                default:
-                    printf("Invalid choice. Please enter a number between 1 and 8.\n");
+            case 1:
+                createElectionSchedule();
+                break;
+            case 2:
+                manageCandidates();
+                break;
+            case 3:
+                registerVoter();
+                break;
+            case 4:
+                updateVoterDetails();
+                break;
+            case 5:
+                searchVoterDetails();
+                break;
+            case 6:
+                castVote();
+                break;
+            case 7:
+                displayVoteResults();
+                break;
+            case 8:
+                printf("Exiting the program. Goodbye!\n");
+                break;
+            default:
+                printf("Invalid choice. Please enter a number between 1 and 8.\n");
             }
         } while (choice != 8);
     } else {
         printf("Incorrect password. Access denied.\n");
     }
 }
-// Function to handle voter login
+
 void voterMenu() {
     int voterChoice;
     int sno;
     char password[20];
 
-    // Prompt the voter for their credentials
     printf("Enter Voter Serial Number: ");
-    scanf("%d", &sno);
+    scanf("%d", & sno);
 
     printf("Enter Password: ");
     scanf("%s", password);
 
-    // Authenticate the voter
     if (authenticatevoter(sno, password)) {
-        // Authentication successful
+
         do {
             printf("\nvoter Menu\n");
             printf("1. Update Voter Details\n");
-            printf("2. Search Voter Details\n");
-            printf("3. Cast Vote\n");
-            printf("4. Display Vote Results\n");
-            printf("5. Exit\n");
+            printf("2. Enter Vote\n");
+            printf("3. Display Vote Results\n");
+            printf("4. Exit\n");
             printf("Enter your choice: ");
-            scanf("%d", &voterChoice);
+            scanf("%d", & voterChoice);
 
             switch (voterChoice) {
-                case 1:
-                    updateVoterDetails();
-                    break;
-                case 2:
-                    searchVoterDetails();
-                    break;
-                case 3:
-                    castVote();
-                    break;
-                case 4:
-                    displayVoteResults();
-                    break;
-                case 5:
-                    printf("Exiting voter Menu.\n");
-                    break;
-                default:
-                    printf("Invalid choice. Please enter a number between 1 and 5.\n");
+            case 1:
+                updateVoterDetails();
+                break;
+            case 2:
+                castVote();
+                break;
+            case 3:
+                displayVoteResults();
+                break;
+            case 4:
+                printf("Exiting voter Menu.\n");
+                break;
+            default:
+                printf("Invalid choice. Please enter a number between 1 and 5.\n");
             }
         } while (voterChoice != 5);
     } else {
-        // Authentication failed
+
         printf("Authentication failed. Exiting voter Menu.\n");
     }
 }
 
-// Function to authenticate the voter based on Serial Number and Password
-int authenticatevoter(int sno, const char* password) {
-    FILE *voterFile;
+int authenticatevoter(int sno,
+    const char * password) {
+    FILE * voterFile;
     struct Voter voter;
     int found = 0;
 
@@ -464,13 +538,13 @@ int authenticatevoter(int sno, const char* password) {
 
     if (voterFile == NULL) {
         printf("Error opening voter file.\n");
-        return 0;  // Authentication failed
+        return 0; 
     }
 
-    while (fscanf(voterFile, "%d %*s %*s %*s %s\n", &voter.sno, voter.password) != EOF) {
+    while (fscanf(voterFile, "%d %*s %*s %*s %s\n", & voter.sno, voter.password) != EOF) {
         if (voter.sno == sno && strcmp(voter.password, password) == 0) {
             found = 1;
-            break;  // voter authenticated
+            break; 
         }
     }
 
