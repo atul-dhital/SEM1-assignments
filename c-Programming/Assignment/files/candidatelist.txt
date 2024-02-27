@@ -1,4 +1,2 @@
-1 kumar	NC	Kathmandu
-2 Shyam	CPNUML	Gorkha
-3 Hari	CPNUML(S)	Chitwan
-4 Gopal	LP	Banke
+1	Saugat	XYZ	12
+120	Hair	ABC	Dhulihel

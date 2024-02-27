@@ -15,3 +15,5 @@ void main()
     printf("The mul of given two number is:%d\n", d);
     printf("The mul of given two number is:%d\n", a);
 }
+
+

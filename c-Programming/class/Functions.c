@@ -92,3 +92,5 @@
 //     }
 // }
 
+    //functions to pass the array or passing the individual array element
+    

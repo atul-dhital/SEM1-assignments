@@ -1,5 +1,2 @@
-Kathmandu    20220909
-Gorkha       20220909
-Chitwan      20220909
-Pokhara      20220909
-Kathmandu	20220909
+demo	election
+Demo	20240229
