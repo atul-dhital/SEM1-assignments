@@ -32,6 +32,11 @@ struct Voter {
     char password[MAX_PASSWORD_LENGTH];
 };
 
+struct Admin {
+    char username[MAX_NAME_LENGTH];
+    char password[MAX_PASSWORD_LENGTH];
+};
+
 void createElectionSchedule();
 void registerCandidate();
 void registerVoter();
@@ -39,54 +44,184 @@ void updateVoterDetails();
 void searchVoterDetails();
 void castVote();
 void displayVoteResults();
+void adminMenu();
+void voterMenu();
+
+// Hardcoded admin credentials
+struct Admin admin = {"admin", "admin123"};
 
 int main() {
+    int userType;
+    printf("Select User Type:\n");
+    printf("1. Admin\n");
+    printf("2. Voter\n");
+    printf("Enter your choice: ");
+    scanf("%d", &userType);
 
-    int choice;
-    do {
-        printf("\n1. Create Election Schedule\n");
-        printf("2. Register Candidate\n");
-        printf("3. Register Voter\n");
-        printf("4. Update Voter Details\n");
-        printf("5. Search Voter Details\n");
-        printf("6. Cast Vote\n");
-        printf("7. Display Vote Results\n");
-        printf("8. Exit\n");
-        printf("Enter your choice: ");
-        scanf("%d", &choice);
-
-        switch (choice) {
-            case 1:
-                createElectionSchedule();
-                break;
-            case 2:
-                registerCandidate();
-                break;
-            case 3:
-                registerVoter();
-                break;
-            case 4:
-                updateVoterDetails();
-                break;
-            case 5:
-                searchVoterDetails();
-                break;
-            case 6:
-                castVote();
-                break;
-            case 7:
-                displayVoteResults();
-                break;
-            case 8:
-                printf("Exiting...\n");
-                break;
-            default:
-                printf("Invalid choice. Please enter a number between 1 and 8.\n");
-        }
-    } while (choice != 8);
+    switch (userType) {
+        case 1:
+            adminMenu();
+            break;
+        case 2:
+            voterMenu();
+            break;
+        default:
+            printf("Invalid choice.\n");
+    }
 
     return 0;
 }
+
+void adminMenu() {
+    // Admin login
+    struct Admin inputAdmin;
+    printf("Admin Login\n");
+    printf("Enter username: ");
+    scanf("%s", inputAdmin.username);
+    printf("Enter password: ");
+    scanf("%s", inputAdmin.password);
+
+    // Validate admin credentials
+    if (strcmp(inputAdmin.username, admin.username) == 0 && strcmp(inputAdmin.password, admin.password) == 0) {
+        int adminChoice;
+        do {
+            printf("\nAdmin Menu:\n");
+            printf("1. Create Election Schedule\n");
+            printf("2. Register Candidate\n");
+            printf("3. Register Voter\n");
+            printf("4. Update Voter Details\n");
+            printf("5. Search Voter Details\n");
+            printf("6. Cast Vote\n");
+            printf("7. Display Vote Results\n");
+            printf("8. Exit\n");
+            printf("Enter your choice: ");
+            scanf("%d", &adminChoice);
+
+            switch (adminChoice) {
+                case 1:
+                    createElectionSchedule();
+                    break;
+                case 2:
+                    registerCandidate();
+                    break;
+                case 3:
+                    registerVoter();
+                    break;
+                case 4:
+                    updateVoterDetails();
+                    break;
+                case 5:
+                    searchVoterDetails();
+                    break;
+                case 6:
+                    castVote();
+                    break;
+                case 7:
+                    displayVoteResults();
+                    break;
+                case 8:
+                    printf("Exiting admin panel...\n");
+                    break;
+                default:
+                    printf("Invalid choice.\n");
+            }
+        } while (adminChoice != 8);
+    } else {
+        printf("Invalid username or password.\n");
+    }
+}
+
+#include <stdbool.h>
+
+bool isVoterValid(struct Voter inputVoter) {
+    FILE *voterFile;
+    struct Voter voter;
+
+    voterFile = fopen("voterlist.txt", "r");
+    if (voterFile == NULL) {
+        printf("Error opening voter list file.\n");
+        return false; // Unable to check, return false
+    }
+
+    while (fscanf(voterFile, "%d %*s %*s %*s %*s", &voter.sno) != EOF) {
+        if (voter.sno == inputVoter.sno) {
+            fclose(voterFile);
+            return true; // Voter found
+        }
+    }
+
+    fclose(voterFile);
+    return false; // Voter not found
+}
+
+bool isPasswordValid(struct Voter inputVoter) {
+    FILE *voterFile;
+    struct Voter voter;
+
+    voterFile = fopen("voterlist.txt", "r");
+    if (voterFile == NULL) {
+        printf("Error opening voter list file.\n");
+        return false; // Unable to check, return false
+    }
+
+    while (fscanf(voterFile, "%d %*s %*s %*s %s", &voter.sno, voter.password) != EOF) {
+        if (voter.sno == inputVoter.sno && strcmp(voter.password, inputVoter.password) == 0) {
+            fclose(voterFile);
+            return true; // Password matches
+        }
+    }
+
+    fclose(voterFile);
+    return false; // Password doesn't match
+}
+
+void voterMenu() {
+    struct Voter inputVoter;
+    printf("Voter Login\n");
+    printf("Enter your SNO: ");
+    scanf("%d", &inputVoter.sno);
+    printf("Enter your password: ");
+    scanf("%s", inputVoter.password);
+
+    if (!isVoterValid(inputVoter)) {
+        printf("Invalid SNO. Exiting voter panel...\n");
+        return;
+    }
+
+    if (!isPasswordValid(inputVoter)) {
+        printf("Invalid password. Exiting voter panel...\n");
+        return;
+    }
+
+    printf("\nVoter Menu:\n");
+    printf("1. Update Voter Details\n");
+    printf("2. Search Voter Details\n");
+    printf("3. Cast Vote\n");
+    printf("4. Exit\n");
+    printf("Enter your choice: ");
+    int voterChoice;
+    scanf("%d", &voterChoice);
+
+    switch (voterChoice) {
+        case 1:
+            updateVoterDetails();
+            break;
+        case 2:
+            searchVoterDetails();
+            break;
+        case 3:
+            castVote();
+            break;
+        case 4:
+            printf("Exiting voter panel...\n");
+            break;
+        default:
+            printf("Invalid choice.\n");
+    }
+}
+
+
+
 
 void createElectionSchedule() {
     FILE *scheduleFile;
@@ -134,7 +269,6 @@ void registerCandidate() {
 
     printf("Candidate registered successfully.\n");
 }
-
 void registerVoter() {
     FILE *voterFile;
     struct Voter newVoter;
@@ -151,10 +285,16 @@ void registerVoter() {
     scanf("%d %d %d", &newVoter.dob.year, &newVoter.dob.month, &newVoter.dob.day);
     printf("Enter voter address: ");
     scanf("%s", newVoter.address);
-    printf("Enter voter password: ");
-    scanf("%s", newVoter.password);
+    
+    // Generate a random serial number
+    newVoter.sno = rand() % MAX_VOTERS + 1;
 
-    fprintf(voterFile, "%s\t%d/%02d/%02d\t%s\t%s\n", newVoter.name, newVoter.dob.year, newVoter.dob.month, newVoter.dob.day, newVoter.address, newVoter.password);
+    // Generate a random password
+    char password[MAX_PASSWORD_LENGTH];
+    sprintf(password, "%d%d%d", rand() % 10, rand() % 10, rand() % 10); // Generate a 3-digit numeric password
+    strcpy(newVoter.password, password);
+
+    fprintf(voterFile, "%d\t%s\t%d/%02d/%02d\t%s\t%s\n", newVoter.sno, newVoter.name, newVoter.dob.year, newVoter.dob.month, newVoter.dob.day, newVoter.address, newVoter.password);
 
     fclose(voterFile);
 
@@ -308,9 +448,13 @@ void castVote() {
 }
 
 void displayVoteResults() {
-    FILE *voteCountFile;
-    char candidateName[MAX_NAME_LENGTH];
-    int voteCount = 0;
+    FILE *voteCountFile, *candidateFile;
+    int candidate1Votes = 0;
+    int candidate2Votes = 0;
+    int candidate3Votes = 0;
+    int candidate4Votes = 0;
+    int totalVotes = 0;
+    int vote;
 
     voteCountFile = fopen("votecount.txt", "r");
     if (voteCountFile == NULL) {
@@ -318,30 +462,53 @@ void displayVoteResults() {
         return;
     }
 
-    int ramVotes = 0;
-    int shyamVotes = 0;
-    int hariVotes = 0;
-    int gopalVotes = 0;
-
-    while (fscanf(voteCountFile, "%*d %s", candidateName) != EOF) {
-        if (strcmp(candidateName, "Ram") == 0) {
-            ramVotes++;
-        } else if (strcmp(candidateName, "Shyam") == 0) {
-            shyamVotes++;
-        } else if (strcmp(candidateName, "Hari") == 0) {
-            hariVotes++;
-        } else if (strcmp(candidateName, "Gopal") == 0) {
-            gopalVotes++;
+    // Read votes from the vote count file and count votes for each candidate
+    while (fscanf(voteCountFile, "%d", &vote) != EOF) {
+        switch (vote) {
+            case 1:
+                candidate1Votes++;
+                break;
+            case 2:
+                candidate2Votes++;
+                break;
+            case 3:
+                candidate3Votes++;
+                break;
+            case 4:
+                candidate4Votes++;
+                break;
+            // Add more cases if you have more candidates
+            default:
+                printf("Invalid vote choice.\n");
         }
-        voteCount++;
+        totalVotes++;
     }
 
     fclose(voteCountFile);
 
+    // Display the vote results
     printf("Vote Results:\n");
-    printf("Ram: %d votes\n", ramVotes);
-    printf("Shyam: %d votes\n", shyamVotes);
-    printf("Hari: %d votes\n", hariVotes);
-    printf("Gopal: %d votes\n", gopalVotes);
-    printf("Total votes cast: %d\n", voteCount);
+    printf("Candidate 1: %d votes\n", candidate1Votes);
+    printf("Candidate 2: %d votes\n", candidate2Votes);
+    printf("Candidate 3: %d votes\n", candidate3Votes);
+    printf("Candidate 4: %d votes\n", candidate4Votes);
+    // Add more printf statements for additional candidates if needed
+    printf("Total votes cast: %d\n", totalVotes);
+
+    // Display registered candidates
+    printf("\nRegistered Candidates:\n");
+
+    candidateFile = fopen("candidatelist.txt", "r");
+    if (candidateFile == NULL) {
+        printf("Error opening candidate list file.\n");
+        return;
+    }
+
+    struct Candidate candidate;
+
+    while (fscanf(candidateFile, "%s %s %s", candidate.name, candidate.party, candidate.constituency) != EOF) {
+        printf("Name: %s\nParty: %s\nConstituency: %s\n\n", candidate.name, candidate.party, candidate.constituency);
+    }
+
+    fclose(candidateFile);
 }
